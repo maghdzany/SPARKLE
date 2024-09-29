@@ -1,4 +1,5 @@
 #include "Storage.h"
+#include "config.h"
 
 void Storage::init() {
     esp_err_t err = nvs_flash_init();
@@ -63,12 +64,18 @@ String Storage::addAlarm(const String& existingJson, const String& newJson) {
 
     newData["id"] = doc.size() + 1;
 
+    // Ensure active is taken from newJson, not hardcoded to false
+    bool isActive = newData["active"]; // Correctly assign from input JSON
+    newData["last_triggered"] = ""; // Placeholder for last triggered time
+
     JsonObject orderedData = doc.add<JsonObject>();
     orderedData["id"] = newData["id"];
+    orderedData["active"] = isActive; // Use the correct value from newData
     orderedData["label"] = newData["label"];
     orderedData["time"] = newData["time"];
     orderedData["repeat"] = newData["repeat"];
     orderedData["ringtone"] = newData["ringtone"];
+    orderedData["last_triggered"] = newData["last_triggered"];
 
     String result;
     serializeJson(doc, result);
@@ -96,4 +103,20 @@ String Storage::removeAlarmById(const String& existingJson, int id) {
     String result;
     serializeJson(doc, result);
     return result;
+}
+
+void Storage::setGlobalVolume(int volume) {
+    saveData("global_volume", String(volume));
+}
+
+int Storage::getGlobalVolume() {
+    String volumeStr = getData("global_volume");
+    return volumeStr.toInt();
+}
+
+void Storage::setDefaultVolume() {
+    int volume = getGlobalVolume(); // Cek apakah volume sudah ada di NVS
+    if (volume == 0) { // Jika belum ada, gunakan default dari config.h
+        saveData("global_volume", String(DEFAULT_VOLUME));
+    }
 }

@@ -4,28 +4,101 @@
 #include "config.h"
 
 DFRobotDFPlayerMini myDFPlayer;
+
 void printDetail(uint8_t type, int value);
 
-void initAudio()
-{
-  
-  Serial2.begin(9600, SERIAL_8N1, RX_AUDIO, TX_AUDIO);  // For ESP32
+void AudioManager::init() {
+    Serial2.begin(9600, SERIAL_8N1, RX_AUDIO, TX_AUDIO);  // For ESP32
 
-  Serial.println(F("DFRobot DFPlayer Mini Demo"));
-  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
-  
-  if (!myDFPlayer.begin(Serial2, true, true)) {
-    Serial.println(F("Unable to begin:"));
-    Serial.println(F("1.Please recheck the connection!"));
-    Serial.println(F("2.Please insert the SD card!"));
-    while(true){
-      delay(10);
+    Serial.println(F("DFRobot DFPlayer Mini Demo"));
+    Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+    
+    if (!myDFPlayer.begin(Serial2, true, true)) {
+        Serial.println(F("Unable to begin:"));
+        Serial.println(F("1.Please recheck the connection!"));
+        Serial.println(F("2.Please insert the SD card!"));
+        while (true) {
+            delay(10);
+        }
     }
-  }
-  Serial.println(F("DFPlayer Mini online."));
-  
-  myDFPlayer.volume(DEFAULT_VOLUME);  // Set volume value (0-30)
+    Serial.println(F("DFPlayer Mini online."));
+    
+    myDFPlayer.volume(DEFAULT_VOLUME);  // Set volume value (0-30)
 }
+
+void AudioManager::handlePlay(int trackNumber) {
+    myDFPlayer.play(trackNumber);
+}
+
+void AudioManager::handleVolume(int volume) {
+    myDFPlayer.volume(volume);
+}
+
+void AudioManager::handleVolumeUp() {
+    int currentVolume = myDFPlayer.readVolume();
+    if (currentVolume < 30) {  // Max volume is 30
+        myDFPlayer.volume(currentVolume + 1);
+    }
+}
+
+void AudioManager::handleVolumeDown() {
+    int currentVolume = myDFPlayer.readVolume();
+    if (currentVolume > 0) {  // Min volume is 0
+        myDFPlayer.volume(currentVolume - 1);
+    }
+}
+
+void AudioManager::handleMute() {
+    myDFPlayer.volume(0);  // Mute by setting volume to 0
+}
+
+void AudioManager::handleUnmute() {
+    
+    myDFPlayer.volume(DEFAULT_VOLUME);  // Unmute by restoring default volume
+}
+
+void AudioManager::handleEqualizer(uint8_t eq) {
+    myDFPlayer.EQ(eq);  // Set equalizer
+}
+
+String AudioManager::handleReadEqualizer() {
+    uint8_t eqValue = myDFPlayer.readEQ();  // Mendapatkan nilai equalizer
+    switch (eqValue) {
+        case DFPLAYER_EQ_NORMAL: return "NORMAL";
+        case DFPLAYER_EQ_POP: return "POP";
+        case DFPLAYER_EQ_ROCK: return "ROCK";
+        case DFPLAYER_EQ_JAZZ: return "JAZZ";
+        case DFPLAYER_EQ_CLASSIC: return "CLASSIC";
+        case DFPLAYER_EQ_BASS: return "BASS";
+        default: return "UNKNOWN";  // Jika tidak ada yang cocok
+    }
+}
+
+
+String AudioManager::handleCurrentTrack() {
+    return String(myDFPlayer.readCurrentFileNumber());  // Return current track number
+}
+
+String AudioManager::handleListTracks() {
+    String trackList = "[";
+    int count = myDFPlayer.readFileCounts();
+    for (int i = 1; i <= count; i++) {
+        trackList += "\"" + padWithZeros(i, 4) + "\"";  // Format: 0001, 0002, etc.
+        if (i < count) trackList += ",";
+    }
+    trackList += "]";  // Menutup array JSON
+    return trackList;  // Mengembalikan daftar track dalam format JSON
+}
+
+
+String AudioManager::padWithZeros(int number, int length) {
+    String padded = String(number);
+    while (padded.length() < length) {
+        padded = "0" + padded;  // Menambahkan nol di depan
+    }
+    return padded;
+}
+
 
 // void loop()
 // {

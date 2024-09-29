@@ -5,6 +5,7 @@
 #include "TimeManager.h"
 #include "AlarmManager.h"
 #include "WebServer.h"
+#include "AudioManager.h"
 
 void setup() {
     Serial.begin(115200);
@@ -12,6 +13,7 @@ void setup() {
     Storage::init();
     TimeManager::initializeTime();
     AlarmManager::initializeAlarmSystem();
+    AudioManager::init();
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {

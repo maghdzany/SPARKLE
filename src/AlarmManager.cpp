@@ -60,11 +60,38 @@ void AlarmManager::triggerAlarm() {
     digitalWrite(LED_PIN, HIGH);
     alarmStartTime = millis();
     isAlarmActive = true;
+
+    String alarms = Storage::getData("alarmData");
+    JsonDocument doc;
+    deserializeJson(doc, alarms);
+
+    for (JsonObject alarm : doc.as<JsonArray>()) {
+        if (TimeManager::isAlarmTimeMatching(alarm["time"], alarm["repeat"])) {
+            alarm["active"] = true; // Set active to true
+            alarm["last_triggered"] = TimeManager::getCurrentTimeString(); // Update last triggered time
+        }
+    }
+
+    String updatedAlarms;
+    serializeJson(doc, updatedAlarms);
+    Storage::saveData("alarmData", updatedAlarms);
     Serial.println("Alarm triggered!");
 }
 
 void AlarmManager::stopAlarm() {
     digitalWrite(LED_PIN, LOW);
     isAlarmActive = false;
+
+    String alarms = Storage::getData("alarmData");
+    JsonDocument doc;
+    deserializeJson(doc, alarms);
+
+    for (JsonObject alarm : doc.as<JsonArray>()) {
+        alarm["active"] = false; // Set active to false
+    }
+
+    String updatedAlarms;
+    serializeJson(doc, updatedAlarms);
+    Storage::saveData("alarmData", updatedAlarms);
     Serial.println("Alarm stopped!");
 }
