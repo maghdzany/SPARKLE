@@ -1,20 +1,23 @@
 #ifndef AUDIO_MANAGER_H
 #define AUDIO_MANAGER_H
 
-class AudioManager {
+#include "DFRobotDFPlayerMini.h"
+
+class AudioManager
+{
 public:
-    static void init();
+    static void init();     
+    static int fileCount(); 
+    static String fileList();
+    static const char *getFileName(int fileNumber);
     static void handlePlay(int trackNumber);
-    static void handleVolume(int volume);
-    static void handleVolumeUp();
-    static void handleVolumeDown();
-    static void handleMute();
-    static void handleUnmute();
+    static void handleStop();
+    static void handleVolume(uint8_t volume);
+    static uint8_t readVolume();
     static void handleEqualizer(uint8_t eq);
-    static String handleReadEqualizer();
-    static String handleCurrentTrack();
-    static String handleListTracks();
-    static String padWithZeros(int number, int length);
+    static uint8_t readEqualizer();
+    static void debugAudio();
+    static void printDetail(uint8_t type, int value);
 };
 
 #endif // AUDIO_MANAGER_H

@@ -6,7 +6,7 @@
 
 class TimeManager {
 public:
-    static void initializeTime();
+    static void init();
     static String getCurrentTimeString();
     static String getCurrentDayString();
     static bool isAlarmTimeMatching(const String& alarmTime, const String& alarmDays);

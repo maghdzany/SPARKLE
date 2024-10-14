@@ -1,7 +1,7 @@
 #include "TimeManager.h"
 #include <ArduinoJson.h>
 
-void TimeManager::initializeTime() {
+void TimeManager::init() {
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
 }
 
@@ -18,6 +18,7 @@ String TimeManager::getCurrentTimeString() {
 String TimeManager::getCurrentDayString() {
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
+        Serial.println("Failed to get local time");
         return "Failed to obtain day";
     }
     char dayString[10];
@@ -28,10 +29,11 @@ String TimeManager::getCurrentDayString() {
 String TimeManager::getTimeJsonString() {
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
+        Serial.println("Failed to get local time jsonstring");
         return "{\"error\": \"Failed to obtain time\"}";
     }
 
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     doc["hour"] = timeinfo.tm_hour;
     doc["minute"] = timeinfo.tm_min;
     doc["second"] = timeinfo.tm_sec;
@@ -58,5 +60,5 @@ bool TimeManager::isAlarmTimeMatching(const String& alarmTime, const String& ala
     
     return (String(currentTimeString) == alarmTime) && 
            (alarmDays.indexOf(currentDay) != -1) && 
-           (timeinfo.tm_sec == 0);
+           (timeinfo.tm_sec == 0);  // Hanya cocok pada detik ke-0
 }
